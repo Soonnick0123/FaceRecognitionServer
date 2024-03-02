@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
 
-    'RecognitionServer',
+    'RecognitionApp',
 ]
 
 # CORS_ALLOWED_ORIGINS = ['http://localhost:5173/']
