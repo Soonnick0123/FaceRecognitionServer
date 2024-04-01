@@ -1,4 +1,5 @@
 # Enter virtual environment
+cd RecognitionServer
 venv/Scripts/activate
 
 # Install package
