@@ -9,3 +9,7 @@ def helloWorld ( request ):
 @csrf_exempt
 def secondFunction(request):
     return JsonResponse({'message': "Second Message!"})
+
+@csrf_exempt
+def registerCustomer(request):
+    return JsonResponse({'message': "Second Message!"})
