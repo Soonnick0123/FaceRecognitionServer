@@ -6,4 +6,5 @@ urlpatterns = [
     path("secondFunction", views.secondFunction),
     path("registerCustomer", views.registerCustomer),
     path("getCustomerList", views.getCustomerList),
+    path("deleteCustomer", views.deleteCustomer),
 ]

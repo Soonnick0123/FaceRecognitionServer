@@ -5,6 +5,7 @@ from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from .models import *
 from . import serializers
+import os
 
 @csrf_exempt
 def helloWorld ( request ):
@@ -45,5 +46,23 @@ def registerCustomer(request):
 @csrf_exempt
 def getCustomerList(request):
     allCustomer = Customer.objects.all()
-    serializer = serializers.CustomerSerializer(allCustomer, many=True)
+    serializer = serializers.CustomerSerializer(allCustomer,context={'request': request}, many=True)
     return JsonResponse({'customerList': serializer.data}, status=200, safe=False)
+
+@csrf_exempt
+def deleteCustomer(request):
+    customerId = request.POST['customerId']
+
+    try:
+        customer = Customer.objects.get(id=customerId)
+        if customer.photo:
+            photo_path = customer.photo.path
+            if os.path.isfile(photo_path):
+                print("exist")
+                os.remove(photo_path)
+        customer.delete()
+        return HttpResponse(status=200)
+    except Customer.DoesNotExist:
+        return HttpResponse(status=460)
+    except Exception as e:
+        return JsonResponse({'error': e.message}, status=500)
