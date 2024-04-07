@@ -5,4 +5,5 @@ urlpatterns = [
     path("helloWorld", views.helloWorld),
     path("secondFunction", views.secondFunction),
     path("registerCustomer", views.registerCustomer),
+    path("getCustomerList", views.getCustomerList),
 ]
