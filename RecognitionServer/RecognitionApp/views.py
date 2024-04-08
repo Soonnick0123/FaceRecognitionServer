@@ -3,9 +3,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse,JsonResponse
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
 from .models import *
 from . import serializers
 import os
+import uuid
+import base64
 
 @csrf_exempt
 def helloWorld ( request ):
@@ -21,7 +24,8 @@ def registerCustomer(request):
     email = request.POST["email"]
     phone = request.POST["phone"]
     gender = request.POST["gender"]
-    photo = request.FILES.get("photo")
+    # photo = request.FILES.get("photo") # open if use file input
+    photo = request.POST.get('photo')
 
     check_exits=Customer.objects.filter(email=email)
 
@@ -38,7 +42,16 @@ def registerCustomer(request):
     except ValidationError as e:
         return JsonResponse({'error': e.message}, status=420)
 
-    newCustomer = Customer.objects.create(name=name,email=email,phone=phone,gender=gender,photo=photo)
+    # original_filename = photo.name
+    # file_extension = original_filename.split('.')[-1]
+    # unique_filename = f"{uuid.uuid4()}.{file_extension}"
+    format, imgstr = photo.split(';base64,')
+    ext = format.split('/')[-1]
+    unique_filename = f"{uuid.uuid4()}.{ext}"
+    data = ContentFile(base64.b64decode(imgstr), name=unique_filename)
+
+    newCustomer = Customer(name=name,email=email,phone=phone,gender=gender,photo=photo)
+    newCustomer.photo.save(unique_filename, data, save=False)
     newCustomer.save()
 
     return HttpResponse(status=200)
@@ -58,7 +71,6 @@ def deleteCustomer(request):
         if customer.photo:
             photo_path = customer.photo.path
             if os.path.isfile(photo_path):
-                print("exist")
                 os.remove(photo_path)
         customer.delete()
         return HttpResponse(status=200)
