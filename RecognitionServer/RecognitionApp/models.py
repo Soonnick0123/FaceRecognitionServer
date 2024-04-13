@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 import os
 
 def customer_directory_path(instance, filename):
@@ -23,3 +24,10 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.name
+
+class LoginRecord(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='login_records')
+    login_time = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.customer.name} logged in at {self.login_time}"

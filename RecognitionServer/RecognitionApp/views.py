@@ -5,11 +5,17 @@ from django.http import HttpResponse,JsonResponse
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
+from pathlib import Path
 from .models import *
 from . import serializers
 import os
 import uuid
 import base64
+from PIL import Image
+from io import BytesIO
+from deepface import DeepFace
+import pandas as pd
+from tempfile import NamedTemporaryFile
 
 @csrf_exempt
 def helloWorld ( request ):
@@ -103,3 +109,56 @@ def deleteCustomer(request):
         return HttpResponse(status=460)
     except Exception as e:
         return JsonResponse({'error': e.message}, status=500)
+
+@csrf_exempt
+def webcamRecognition(request):
+    base64photo = request.POST.get('photo')
+    format, imgstr = base64photo.split(';base64,')
+    img_data = base64.b64decode(imgstr)
+    img = Image.open(BytesIO(img_data))
+
+    with NamedTemporaryFile(delete=False, suffix='.png') as tmp_file:
+        img.save(tmp_file, format='PNG')
+        tmp_file_path = tmp_file.name
+
+    try:
+        customer_photos_path = os.path.join(settings.MEDIA_ROOT, 'customer_photos')
+        results = DeepFace.find(img_path=tmp_file_path,
+                                db_path=customer_photos_path,
+                                model_name="Facenet512",
+                                detector_backend="retinaface",
+                                enforce_detection=False,
+                                threshold=0.3)
+        if results:
+            first_result = results[0]
+            first_result = first_result.iloc[0]
+            identity = first_result.get('identity')
+            distance = first_result.get('distance')
+            identity_path = Path(identity)
+            customer_username = identity_path.parts[-2]
+            print(customer_username,distance)
+            return HttpResponse(status=200)
+        else:
+            return HttpResponse(status=440)
+
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        return HttpResponse(status=420)
+    finally:
+        if os.path.exists(tmp_file_path):
+            os.remove(tmp_file_path)
+
+@csrf_exempt
+def record_login(customer):
+    LoginRecord.objects.create(customer=customer, login_time=timezone.now())
+    return
+
+@csrf_exempt
+def delete_login_record(request):
+    customerId = request.POST['customerId']
+    try:
+        record = LoginRecord.objects.get(id=customerId)
+        record.delete()
+        return HttpResponse(status=200)
+    except LoginRecord.DoesNotExist:
+        return HttpResponse(status=420)
