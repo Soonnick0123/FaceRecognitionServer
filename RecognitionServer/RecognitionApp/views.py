@@ -131,6 +131,9 @@ def webcamRecognition(request):
                                 threshold=0.3)
         if results:
             first_result = results[0]
+            if isinstance(first_result, pd.DataFrame):
+                if first_result.empty:
+                    return HttpResponse(status=420)
             first_result = first_result.iloc[0]
             identity = first_result.get('identity')
             distance = first_result.get('distance')
@@ -139,11 +142,11 @@ def webcamRecognition(request):
             print(customer_username,distance)
             return HttpResponse(status=200)
         else:
-            return HttpResponse(status=440)
+            return HttpResponse(status=420)
 
     except Exception as e:
-        print(f"An error occurred: {str(e)}")
-        return HttpResponse(status=420)
+        return HttpResponse(status=440)
+
     finally:
         if os.path.exists(tmp_file_path):
             os.remove(tmp_file_path)
