@@ -32,7 +32,6 @@ def registerCustomer(request):
     email = request.POST["email"]
     phone = request.POST["phone"]
     gender = request.POST["gender"]
-    # photo = request.FILES.get("photo") # open if use file input
     photos = [request.POST.get(f'photo{i}') for i in range(1, 4)]
 
 
@@ -55,15 +54,6 @@ def registerCustomer(request):
 
     except ValidationError as e:
         return JsonResponse({'error': e.message}, status=420)
-
-    # original_filename = photo.name
-    # file_extension = original_filename.split('.')[-1]
-    # unique_filename = f"{uuid.uuid4()}.{file_extension}"
-
-    # format, imgstr = photo.split(';base64,')                            # close if use file input
-    # ext = format.split('/')[-1]                                         # close if use file input
-    # unique_filename = f"{uuid.uuid4()}.{ext}"                           # close if use file input
-    # data = ContentFile(base64.b64decode(imgstr), name=unique_filename)  # close if use file input
 
     newCustomer = Customer(name=name,username=username,email=email,phone=phone,gender=gender)
     for i, photo_data in enumerate(photos, start=1):
@@ -99,10 +89,6 @@ def deleteCustomer(request):
                     os.rmdir(os.path.join(root, dir))
             os.rmdir(folder_path)
 
-        # if customer.photo:
-        #     photo_path = customer.photo.path
-        #     if os.path.isfile(photo_path):
-        #         os.remove(photo_path)
         customer.delete()
         return HttpResponse(status=200)
     except Customer.DoesNotExist:
@@ -140,12 +126,17 @@ def webcamRecognition(request):
             identity_path = Path(identity)
             customer_username = identity_path.parts[-2]
             print(customer_username,distance)
-            return HttpResponse(status=200)
+            try:
+                customer = Customer.objects.get(username=customer_username)
+                record_login(customer)
+                return HttpResponse(status=200)
+            except Customer.DoesNotExist:
+                return HttpResponse(status=420)
         else:
             return HttpResponse(status=420)
 
     except Exception as e:
-        return HttpResponse(status=440)
+        return JsonResponse({'error': e.message}, status=440)
 
     finally:
         if os.path.exists(tmp_file_path):
@@ -157,11 +148,19 @@ def record_login(customer):
     return
 
 @csrf_exempt
-def delete_login_record(request):
-    customerId = request.POST['customerId']
+def deleteRecord(request):
+    recordId = request.POST['recordId']
     try:
-        record = LoginRecord.objects.get(id=customerId)
+        record = LoginRecord.objects.get(id=recordId)
         record.delete()
         return HttpResponse(status=200)
     except LoginRecord.DoesNotExist:
         return HttpResponse(status=420)
+    except Customer.DoesNotExist:
+        return HttpResponse(status=420)
+
+@csrf_exempt
+def getLoginRecord(request):
+    allRecord = LoginRecord.objects.all().order_by('-login_time')
+    serializer = serializers.LoginRecordSerializer(allRecord,context={'request': request}, many=True)
+    return JsonResponse({'recordList': serializer.data}, status=200, safe=False)

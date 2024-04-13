@@ -27,3 +27,10 @@ class CustomerSerializer(serializers.ModelSerializer):
         if obj.photo3:
             return self.context['request'].build_absolute_uri(obj.photo3.url)
         return None
+
+class LoginRecordSerializer(serializers.ModelSerializer):
+    customer = CustomerSerializer(read_only=True)  # Using the existing CustomerSerializer
+
+    class Meta:
+        model = LoginRecord
+        fields = ['id','customer', 'login_time']

@@ -8,4 +8,6 @@ urlpatterns = [
     path("getCustomerList", views.getCustomerList),
     path("deleteCustomer", views.deleteCustomer),
     path("webcamRecognition", views.webcamRecognition),
+    path("getLoginRecord", views.getLoginRecord),
+    path("deleteRecord", views.deleteRecord),
 ]
