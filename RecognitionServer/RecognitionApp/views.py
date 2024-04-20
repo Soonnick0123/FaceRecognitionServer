@@ -24,23 +24,23 @@ from deepface.commons import package_utils
 import pandas as pd
 from tempfile import NamedTemporaryFile
 
-detector_backend="retinaface"
-enforce_detection=False
-model_name = "Facenet512"
-
 customer_photos_path = os.path.join(settings.MEDIA_ROOT, 'customer_photos')
-logger = Logger(module="deepface/modules/recognition.py")
-file_name = f"ds_{model_name}_{detector_backend}_v2.pkl"
-file_name = file_name.replace("-", "").lower()
-datastore_path = os.path.join(customer_photos_path, file_name)
-model: FacialRecognition = modeling.build_model(model_name)
-target_size = model.input_shape
-align: bool = True
-normalization: str = "base"
-silent: bool = False
 representationModel = []
 
 def loadDeepfaceRepresentationModel():
+    detector_backend="retinaface"
+    enforce_detection=False
+    model_name = "Facenet512"
+
+    logger = Logger(module="deepface/modules/recognition.py")
+    file_name = f"ds_{model_name}_{detector_backend}_v2.pkl"
+    file_name = file_name.replace("-", "").lower()
+    datastore_path = os.path.join(customer_photos_path, file_name)
+    model: FacialRecognition = modeling.build_model(model_name)
+    target_size = model.input_shape
+    align: bool = True
+    normalization: str = "base"
+    silent: bool = False
     tic = time.time()
     df_cols = [
         "identity",
