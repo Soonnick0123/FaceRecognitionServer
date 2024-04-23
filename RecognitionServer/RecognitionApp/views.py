@@ -5,6 +5,8 @@ from django.http import HttpResponse,JsonResponse
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
+from deepface import DeepFace
+from deepface.commons import package_utils
 from deepface.modules import recognition, modeling
 from deepface.models.FacialRecognition import FacialRecognition
 from deepface.commons.logger import Logger
@@ -19,8 +21,6 @@ import time
 from PIL import Image
 from io import BytesIO
 from tqdm import tqdm
-from deepface import DeepFace
-from deepface.commons import package_utils
 import pandas as pd
 from tempfile import NamedTemporaryFile
 
