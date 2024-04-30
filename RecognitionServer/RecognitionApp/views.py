@@ -214,8 +214,10 @@ def deleteCustomer(request):
                 for dir in dirs:
                     os.rmdir(os.path.join(root, dir))
             os.rmdir(folder_path)
-
+        global representationModel
+        representationModel = loadDeepfaceRepresentationModel()
         customer.delete()
+
         return HttpResponse(status=200)
     except Customer.DoesNotExist:
         return HttpResponse(status=460)
