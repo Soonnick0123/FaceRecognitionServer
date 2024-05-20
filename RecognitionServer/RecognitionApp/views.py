@@ -241,7 +241,7 @@ def webcamRecognition(request):
                                 model_name="Facenet512",
                                 detector_backend="retinaface",
                                 enforce_detection=False,
-                                threshold=0.3,
+                                threshold=0.2,
                                 representations = representationModel)
         if results:
             first_result = results[0]
